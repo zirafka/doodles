@@ -41,9 +41,9 @@ Bez klíče všechno ostatní funguje dál, jen se nová videa z playlistu nepř
 - [ ] Otevři stránku a přihlas se přes Google. Stránka teď nahlásí, že Firestore odmítl přístup. To je v pořádku, pravidla ještě neznají tvoje UID.
 - [ ] Dole na stránce v panelu **Účet** klikni u Firebase UID na **Kopírovat**.
 - [ ] V konzoli Firebase otevři Firestore Database → Rules, nahraď `VLOZ_SVOJE_UID` svým UID (uvozovky nech) a klikni na Publish. Soubor `firestore.rules` v repozitáři zůstává jako šablona, UID do veřejného repozitáře dávat nemusíš.
-- [ ] Na stránce klikni na „Zkusit znovu“ (nebo ji obnov). Deník se při prvním načtení založí z dosavadního stavu (`data/seed.json`): 16 hotových videí a tvoje pořadí.
+- [ ] Na stránce klikni na „Zkusit znovu“ (nebo ji obnov). Při prvním načtení se deník založil z dosavadního stavu (16 hotových videí a tvoje pořadí).
 
-Po tomhle prvním převodu se `data/seed.json` už nepoužívá a můžeš ho smazat. Kdyby pak dokument ve Firestore někdy chyběl, deník začne od nuly v pořadí playlistu.
+Soubor `data/seed.json`, ze kterého se dosavadní stav převedl, už je po převodu smazaný. Kdyby dokument ve Firestore někdy chyběl, deník začne od nuly v pořadí playlistu.
 
 ## Jak to funguje
 
