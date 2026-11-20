@@ -567,7 +567,7 @@ function renderAccount() {
         el('input', { className: 'uid-input', id: 'uid-input', type: 'text', readonly: true, value: state.user.uid, spellcheck: 'false' }),
         el('button', { type: 'button', className: 'pill pill-quiet pill-small', id: 'copy-uid', dataset: { action: 'copy-uid', key: 'account-copy' }, text: 'Kopírovat' }),
       ]),
-      el('p', { className: 'account-note muted', text: 'UID patří do souboru firestore.rules místo VLOZ_SVOJE_UID.' }),
+      el('p', { className: 'account-note muted', text: 'UID patří do pravidel Firestore v konzoli Firebase místo VLOZ_SVOJE_UID.' }),
     ];
   }
   els.accountBody.replaceChildren(...content);
@@ -1106,7 +1106,7 @@ function onSnapshotError(err) {
     tone: 'error',
     title: denied ? 'Firestore odmítl přístup.' : 'Uložený stav se nepodařilo načíst.',
     text: denied
-      ? 'Pokud je to tvůj deník, zkopíruj Firebase UID z panelu Účet dole na stránce, vlož ho do firestore.rules místo VLOZ_SVOJE_UID a pravidla zveřejni v konzoli Firebase (Firestore Database → Rules). Pak to zkus znovu.'
+      ? 'Pokud je to tvůj deník, zkopíruj Firebase UID z panelu Účet dole na stránce, v konzoli Firebase ho vlož do pravidel (Firestore Database → Rules) místo VLOZ_SVOJE_UID a klikni na Publish. Pak to zkus znovu.'
       : `Zkus to za chvíli znovu${err && err.code ? ` (${err.code})` : ''}.`,
     actions: [{ label: 'Zkusit znovu', action: 'retry-sync' }],
   });

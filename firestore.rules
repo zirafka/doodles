@@ -2,7 +2,8 @@ rules_version = '2';
 
 // Pravidla Firestore pro Doodle deník.
 // Do konzole Firebase je vlož ručně: Firestore Database -> záložka Rules -> Publish.
-// Místo VLOZ_SVOJE_UID dej svoje Firebase UID z panelu "Účet" v patičce stránky.
+// Místo VLOZ_SVOJE_UID dej v konzoli svoje Firebase UID z panelu "Účet" v patičce
+// stránky. Tenhle soubor je šablona, UID do něj commitovat nemusíš.
 
 service cloud.firestore {
   match /databases/{database}/documents {
