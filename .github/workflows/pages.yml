@@ -75,8 +75,8 @@ jobs:
       - name: Příprava souborů webu
         run: |
           mkdir -p _site
-          cp index.html style.css app.js firebase-config.js _site/
-          cp -r data thumbs _site/
+          cp index.html style.css app.js firebase-config.js icon.svg manifest.webmanifest _site/
+          cp -r data thumbs icons _site/
 
       - name: Nastavení Pages
         uses: actions/configure-pages@v6
