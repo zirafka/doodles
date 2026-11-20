@@ -62,7 +62,6 @@ const els = {
   drawHeading: $('draw-nadpis'),
   drawVideo: $('draw-video'),
   drawThumb: $('draw-thumb'),
-  drawTitle: $('draw-title'),
   drawMeta: $('draw-meta'),
   drawTop: $('draw-top'),
   drawAgain: $('draw-again'),
@@ -72,7 +71,6 @@ const els = {
   playerMessage: $('player-message'),
   playerMessageText: $('player-message-text'),
   playerMessageLink: $('player-message-link'),
-  playerTitle: $('player-title'),
   playerDone: $('player-done'),
   playerYt: $('player-yt'),
   remainingHeading: $('zbyva-nadpis'),
@@ -225,9 +223,11 @@ async function loadVideos() {
     const ok = v && typeof v.id === 'string' && v.id && !seen.has(v.id);
     if (ok) seen.add(v.id);
     return ok;
-  }).map((v) => ({
+  }).map((v, i) => ({
     id: v.id,
-    title: typeof v.title === 'string' && v.title.trim() ? v.title.trim() : v.id,
+    // Názvy z YouTube nic neříkají, stránka je neukazuje. Pro čtečky obrazovky
+    // se video jmenuje podle pořadí v playlistu.
+    label: `Video ${i + 1}`,
     duration: typeof v.duration === 'string' ? v.duration : '',
   }));
   state.byId = new Map(state.videos.map((v) => [v.id, v]));
@@ -364,8 +364,7 @@ function renderMosaic(view) {
     const done = view.editable && isDone(id);
     dot.classList.toggle('is-done', done);
     dot.style.setProperty('--c', `var(--r${(i % RAINBOW_SIZE) + 1})`);
-    dot.setAttribute('aria-label', `${video.title} (${done ? 'hotovo' : 'zbývá'})`);
-    dot.title = video.title;
+    dot.setAttribute('aria-label', `${video.label} (${done ? 'hotovo' : 'zbývá'})`);
     dot.tabIndex = id === mosaicFocusId ? 0 : -1;
     return dot;
   });
@@ -406,14 +405,11 @@ function renderNext(view) {
         'aria-hidden': 'true',
         dataset: { action: 'play', id: nextId },
       }, [thumbImg(nextId, { lazy: false })]),
-      el('div', { className: 'next-text' }, [
-        el('p', { className: 'next-title', text: video.title }),
-        nextMeta,
-      ]),
+      el('div', { className: 'next-text' }, [nextMeta]),
       el('button', {
         type: 'button',
         className: 'pill next-play',
-        'aria-label': `Pustit: ${video.title}`,
+        'aria-label': `Pustit: ${video.label}`,
         dataset: { action: 'play', id: nextId, key: 'next-play' },
         text: 'Pustit',
       }),
@@ -443,11 +439,9 @@ function renderDraw(view) {
     els.draw.dataset.id = id;
     els.drawThumb.dataset.id = id;
     els.drawThumb.replaceChildren(thumbImg(id, { lazy: false }));
-    els.drawTitle.textContent = video.title;
-    els.drawTitle.title = video.title;
     els.drawPlay.dataset.id = id;
-    els.drawPlay.setAttribute('aria-label', `Pustit: ${video.title}`);
-    els.drawTop.setAttribute('aria-label', `Na začátek fronty: ${video.title}`);
+    els.drawPlay.setAttribute('aria-label', `Pustit: ${video.label}`);
+    els.drawTop.setAttribute('aria-label', `Na začátek fronty: ${video.label}`);
   }
   if (draw.fresh) {
     draw.fresh = false;
@@ -480,7 +474,7 @@ function getRow(id) {
     className: 'check',
     role: 'checkbox',
     'aria-checked': 'false',
-    'aria-label': `Hotovo: ${video.title}`,
+    'aria-label': `Hotovo: ${video.label}`,
     dataset: { action: 'toggle', id, key: `check:${id}` },
     html: ICONS.check,
   });
@@ -491,13 +485,12 @@ function getRow(id) {
     'aria-hidden': 'true',
     dataset: { action: 'play', id },
   }, [thumbImg(id)]);
-  const title = el('p', { className: 'row-title', text: video.title, title: video.title });
   const meta = el('p', { className: 'row-meta' });
-  const text = el('div', { className: 'row-text' }, [title, meta]);
+  const text = el('div', { className: 'row-text' }, [meta]);
   const play = el('button', {
     type: 'button',
     className: 'pill pill-small play-btn',
-    'aria-label': `Pustit: ${video.title}`,
+    'aria-label': `Pustit: ${video.label}`,
     dataset: { action: 'play', id, key: `play:${id}` },
     text: 'Pustit',
   });
@@ -505,13 +498,13 @@ function getRow(id) {
     el('button', {
       type: 'button',
       className: `icon-btn move-btn move-${m.key}`,
-      'aria-label': `${m.label}: ${video.title}`,
+      'aria-label': `${m.label}: ${video.label}`,
       title: m.label,
       dataset: { action: 'move', move: m.key, id, key: `move:${m.key}:${id}` },
       html: ICONS[m.key],
     }),
   );
-  const move = el('div', { className: 'move', role: 'group', 'aria-label': `Pořadí: ${video.title}` }, moveButtons);
+  const move = el('div', { className: 'move', role: 'group', 'aria-label': `Pořadí: ${video.label}` }, moveButtons);
   const actions = el('div', { className: 'row-actions' }, [play, move]);
   row.append(handle, check, thumb, text, actions);
   row._refs = { check, meta, moveButtons };
@@ -587,10 +580,8 @@ function renderPlayerBar() {
   const id = state.playingId;
   if (!id) return;
   const video = state.byId.get(id);
-  els.playerTitle.textContent = video ? video.title : '';
-  els.playerTitle.title = video ? video.title : '';
   els.playerYt.href = youtubeUrl(id);
-  els.playerYt.setAttribute('aria-label', `Otevřít na YouTube: ${video ? video.title : id}`);
+  els.playerYt.setAttribute('aria-label', `Otevřít na YouTube: ${video ? video.label : id}`);
   els.playerMessageLink.href = youtubeUrl(id);
   const done = canEdit() && isDone(id);
   els.playerDone.hidden = !canEdit();
@@ -599,7 +590,7 @@ function renderPlayerBar() {
   els.playerDone.innerHTML = done ? `${ICONS.check}<span>Hotovo</span>` : '<span>Hotovo</span>';
   els.playerDone.setAttribute(
     'aria-label',
-    done ? `Hotovo: ${video.title}. Opětovným stisknutím vrátíš mezi zbývající.` : `Označit jako hotové: ${video.title}`,
+    done ? `Hotovo: ${video.label}. Opětovným stisknutím vrátíš mezi zbývající.` : `Označit jako hotové: ${video.label}`,
   );
 }
 
@@ -701,11 +692,11 @@ function toggleDone(id, source) {
     focusKey = nextId ? `check:${nextId}` : null;
   }
   render({ focusKey, focusFallback: source === 'row' ? els.remainingHeading : null });
-  const title = state.byId.get(id).title;
+  const label = state.byId.get(id).label;
   announce(
     wasDone
-      ? `Vráceno mezi zbývající: ${title}.`
-      : `Hotovo: ${title}. Celkem ${after.doneCount} z ${after.total}.`,
+      ? `Vráceno mezi zbývající: ${label}.`
+      : `Hotovo: ${label}. Celkem ${after.doneCount} z ${after.total}.`,
   );
   scheduleSave();
 }
@@ -730,10 +721,10 @@ function moveAction(id, key, event) {
   } else if (viaKeyboard) {
     row.scrollIntoView({ block: 'center', behavior: scrollBehavior() });
   } else {
-    showToast(`Přesunuto ${key === 'top' ? 'na začátek' : 'na konec'}: ${state.byId.get(id).title}`);
+    showToast(`Přesunuto ${key === 'top' ? 'na začátek' : 'na konec'}.`);
   }
   flash(row);
-  announce(`${state.byId.get(id).title}: pozice ${result.to + 1} z ${result.count}.`);
+  announce(`${state.byId.get(id).label}: pozice ${result.to + 1} z ${result.count}.`);
   scheduleSave();
 }
 
@@ -743,7 +734,7 @@ function moveToIndex(id, index) {
   if (!result) return;
   render();
   flash(getRow(id));
-  announce(`${state.byId.get(id).title}: pozice ${result.to + 1} z ${result.count}.`);
+  announce(`${state.byId.get(id).label}: pozice ${result.to + 1} z ${result.count}.`);
   scheduleSave();
 }
 
@@ -763,7 +754,7 @@ function drawRandom() {
   draw.fresh = true;
   render({ focusKey: 'draw-again' });
   const video = state.byId.get(id);
-  announce(`Vylosováno: ${video.title}${video.duration ? `, ${video.duration}` : ''}.`);
+  announce(`Vylosováno: ${video.label}${video.duration ? `, ${video.duration}` : ''}.`);
 }
 
 function closeDraw() {
@@ -780,7 +771,7 @@ function drawToTop() {
   render({ focusKey: 'next-play' });
   if (!result) return;
   flash(els.nextCard);
-  announce(`Na řadě: ${state.byId.get(id).title}.`);
+  announce(`Na řadě: ${state.byId.get(id).label}.`);
   scheduleSave();
 }
 
