@@ -7,7 +7,7 @@ Použití:
 Načte všechny položky playlistu (YouTube Data API v3, playlistItems.list se
 stránkováním), k nim délky videí (videos.list) a výsledek zapíše do
 data/videos.json, ale jen když se obsah změnil. Smazaná a soukromá videa
-přeskočí. Z názvů odstraní hashtagy a nadbytečné mezery.
+přeskočí. Názvy videí neukládá, stránka je nepoužívá.
 
 Když API vrátí chybu (třeba špatné ID playlistu nebo neplatný klíč), soubor
 zůstane beze změny a skript skončí s nenulovým kódem.
@@ -107,7 +107,7 @@ def fetch_video_details(video_ids: list[str], key: str) -> dict[str, dict]:
         chunk = video_ids[start : start + PAGE_SIZE]
         data = api_get(
             "videos",
-            {"part": "snippet,contentDetails,status", "id": ",".join(chunk), "maxResults": str(PAGE_SIZE)},
+            {"part": "contentDetails,status", "id": ",".join(chunk), "maxResults": str(PAGE_SIZE)},
             key,
         )
         for item in data.get("items", []):
@@ -137,12 +137,6 @@ def videos_word(count: int) -> str:
     return "videí"
 
 
-def clean_title(title: str) -> str:
-    """Odstraní slova začínající # a srazí mezery."""
-    without_tags = " ".join(word for word in title.split() if not word.startswith("#"))
-    return without_tags or " ".join(title.split())
-
-
 def build_videos(playlist_id: str, key: str) -> list[dict]:
     ids = fetch_playlist_video_ids(playlist_id, key)
     details = fetch_video_details(ids, key)
@@ -156,7 +150,6 @@ def build_videos(playlist_id: str, key: str) -> list[dict]:
         videos.append(
             {
                 "id": video_id,
-                "title": clean_title(item.get("snippet", {}).get("title", "")),
                 "duration": format_duration(item.get("contentDetails", {}).get("duration", "")),
             }
         )
