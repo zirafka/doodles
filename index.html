@@ -38,9 +38,32 @@
 
     <main id="main">
       <section class="card next-card" id="next-card" aria-labelledby="next-nadpis">
-        <h2 class="card-heading" id="next-nadpis">Na řadě</h2>
+        <div class="card-top">
+          <h2 class="card-heading" id="next-nadpis">Na řadě</h2>
+          <button type="button" class="pill pill-quiet pill-small" id="draw-open" data-action="draw" data-key="draw-open" aria-label="Vylosovat náhodný doodle" hidden><span>Vylosovat</span></button>
+        </div>
         <div class="next-body" id="next-body">
           <p class="muted">Načítám…</p>
+        </div>
+
+        <div class="draw" id="draw" role="group" aria-labelledby="draw-nadpis" hidden>
+          <div class="draw-top">
+            <h3 class="draw-heading" id="draw-nadpis"><span>Vylosováno</span></h3>
+            <button type="button" class="icon-btn" data-action="draw-close" data-key="draw-close" aria-label="Zavřít losování">×</button>
+          </div>
+          <div class="next-video draw-video" id="draw-video">
+            <button type="button" class="thumb" id="draw-thumb" tabindex="-1" aria-hidden="true" data-action="play"></button>
+            <div class="next-text">
+              <p class="next-title" id="draw-title"></p>
+              <p class="row-meta" id="draw-meta"></p>
+            </div>
+          </div>
+          <div class="draw-actions">
+            <button type="button" class="pill" id="draw-top" data-action="draw-top" data-key="draw-top"><span>Na začátek fronty</span></button>
+            <button type="button" class="pill pill-quiet" id="draw-again" data-action="draw" data-key="draw-again"><span>Losovat znovu</span></button>
+            <button type="button" class="pill pill-quiet" id="draw-play" data-action="play" data-key="draw-play">Pustit</button>
+          </div>
+          <p class="draw-hint muted" id="draw-hint" hidden>Na začátek fronty ho dáš po přihlášení.</p>
         </div>
       </section>
 
