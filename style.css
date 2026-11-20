@@ -673,21 +673,22 @@ a {
   padding: 0;
   overflow: hidden;
   border: 0;
-  border-radius: 10px;
-  background: var(--line);
+  border-radius: 8px;
+  background: var(--line); /* šedý čtverec, když náhled chybí */
   cursor: pointer;
 }
 
+/* Náhled je už čtvercový (scripts/make_thumbs.py), cover nic dalšího neořezává. */
 .thumb img {
   display: block;
   width: 100%;
   height: 100%;
+  border-radius: inherit;
   object-fit: cover;
-  object-position: center;
 }
 
 .row.is-done .thumb img {
-  opacity: 0.55;
+  opacity: 0.72;
 }
 
 .row-text {

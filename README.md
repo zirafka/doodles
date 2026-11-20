@@ -48,6 +48,8 @@ Po tomhle prvním převodu se `data/seed.json` už nepoužívá a můžeš ho sm
 ## Jak to funguje
 
 - **Seznam videí** je v `data/videos.json` (`id`, `title`, `duration`) v pořadí playlistu. Workflow ho každý den aktualizuje skriptem `scripts/update_playlist.py` (jen standardní knihovna Pythonu) a změnu commitne jako `github-actions[bot]`.
+- **Náhledy** jsou čtverce 144×144 v `thumbs/<id>.jpg`. Vyrábí je `scripts/make_thumbs.py` (Python a Pillow). Videa jsou svislá a YouTube je vkládá do rámu 16:9 s rozmazanými pruhy po stranách, takže skript z `maxresdefault.jpg` (1280×720) vyřízne jen čtverec 360×360 ze středu, uvnitř samotného videa. Workflow ho spouští hned po aktualizaci seznamu a nové náhledy commitne spolu s `data/videos.json`. Existující soubory nepřepisuje. Dokud náhled chybí, stránka ukazuje šedý čtverec a video jde pustit.
+- **Ruční ořez** jednoho náhledu: do `data/thumb_overrides.json` přidej `"<id>": [left, top, side]` (čtverec v pixelech obrázku 1280×720), smaž `thumbs/<id>.jpg` a spusť skript znovu.
 - **Stav** je jeden dokument ve Firestore `users/{uid}` s poli `done` (ID videa → datum `RRRR-MM-DD`) a `order` (pořadí všech ID). Ukládá se jen při změně, rychlé změny se slučují (asi 600 ms). Změna z jiného zařízení se projeví hned.
 - **Nová videa** se objeví na konci seznamu „Zbývá“. Videa, která z playlistu zmizí, se ze seznamu vyřadí.
 - **Přihlášení** je přes Google (vyskakovací okno, při jeho selhání přesměrování). Nepřihlášený návštěvník vidí jen seznam a může pouštět videa.
@@ -67,4 +69,14 @@ Ruční aktualizace seznamu videí:
 
 ```bash
 YOUTUBE_API_KEY=tvuj-klic python3 scripts/update_playlist.py
+```
+
+Ruční výroba chybějících náhledů:
+
+```bash
+pip install pillow
+```
+
+```bash
+python3 scripts/make_thumbs.py
 ```

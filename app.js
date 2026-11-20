@@ -153,7 +153,21 @@ function el(tag, props = {}, children = []) {
   return node;
 }
 
-const thumbUrl = (id) => `https://i.ytimg.com/vi/${encodeURIComponent(id)}/mqdefault.jpg`;
+// Čtvercové náhledy 144x144 vyrábí scripts/make_thumbs.py. Když soubor ještě
+// chybí (nové video před během workflow), obrázek zmizí a zůstane šedý čtverec.
+function thumbImg(id, { lazy = true } = {}) {
+  const img = el('img', {
+    src: `thumbs/${encodeURIComponent(id)}.jpg`,
+    alt: '',
+    width: '72',
+    height: '72',
+    loading: lazy ? 'lazy' : undefined,
+    decoding: 'async',
+  });
+  img.addEventListener('error', () => img.remove(), { once: true });
+  return img;
+}
+
 const youtubeUrl = (id) => `https://www.youtube.com/watch?v=${encodeURIComponent(id)}`;
 
 function announce(text) {
@@ -371,7 +385,7 @@ function renderNext(view) {
         tabindex: '-1',
         'aria-hidden': 'true',
         dataset: { action: 'play', id: nextId },
-      }, [el('img', { src: thumbUrl(nextId), alt: '', width: '72', height: '72', decoding: 'async' })]),
+      }, [thumbImg(nextId, { lazy: false })]),
       el('div', { className: 'next-text' }, [
         el('p', { className: 'next-title', text: video.title }),
         nextMeta,
@@ -408,7 +422,7 @@ function getRow(id) {
     tabindex: '-1',
     'aria-hidden': 'true',
     dataset: { action: 'play', id },
-  }, [el('img', { src: thumbUrl(id), alt: '', width: '72', height: '72', loading: 'lazy', decoding: 'async' })]);
+  }, [thumbImg(id)]);
   const title = el('p', { className: 'row-title', text: video.title, title: video.title });
   const meta = el('p', { className: 'row-meta' });
   const text = el('div', { className: 'row-text' }, [title, meta]);
