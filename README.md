@@ -27,7 +27,7 @@ Dokud není hotový bod 1, stránka funguje jen na čtení: videa jdou pouštět
 - [ ] APIs & Services → Library → **YouTube Data API v3** → Enable.
 - [ ] APIs & Services → Credentials → Create credentials → **API key**. U klíče nastav API restrictions → Restrict key → jen **YouTube Data API v3**. Omezení podle webu nebo IP adresy nenastavuj, klíč používá GitHub Actions.
 - [ ] V repozitáři na GitHubu: Settings → Secrets and variables → Actions → New repository secret, název **`YOUTUBE_API_KEY`**, hodnota = klíč.
-- [ ] Zkontroluj ID playlistu v [`scripts/update_playlist.py`](scripts/update_playlist.py) (konstanta `PLAYLIST_ID`). Je to část adresy playlistu za `list=`. Nastavené `PLepb8U4Vq3Fg` je kratší, než bývá obvyklé (běžně kolem 34 znaků), takže může být zkrácené. Když nesedí, skript skončí chybou a seznam videí nechá beze změny.
+- [ ] Zkontroluj ID playlistu v [`scripts/update_playlist.py`](scripts/update_playlist.py) (konstanta `PLAYLIST_ID`). Je to část adresy playlistu za `list=`. Když nesedí, skript skončí chybou a seznam videí nechá beze změny.
 
 Bez klíče všechno ostatní funguje dál, jen se nová videa z playlistu nepřidávají sama.
 
