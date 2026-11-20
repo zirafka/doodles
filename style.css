@@ -386,6 +386,30 @@ a {
   font-size: 1.15rem;
 }
 
+.next-card {
+  outline: 3px solid transparent;
+  outline-offset: 1px;
+  transition: outline-color 0.6s ease-out;
+}
+
+.next-card.flash {
+  outline-color: var(--marker);
+  transition: none;
+}
+
+.card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 34px;
+  margin-bottom: 10px;
+}
+
+.card-top .card-heading {
+  margin-bottom: 0;
+}
+
 .next-video {
   display: flex;
   align-items: center;
@@ -410,6 +434,78 @@ a {
 .next-empty {
   font-weight: 600;
   color: var(--done-ink);
+}
+
+/* ---------- Losování ---------- */
+
+.draw {
+  margin-top: 14px;
+  padding: 10px 12px 12px;
+  border: 1.5px dashed color-mix(in srgb, var(--marker) 45%, var(--line));
+  border-radius: var(--radius-row);
+  background: color-mix(in srgb, var(--marker) 5%, var(--card));
+}
+
+.draw-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.draw-heading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: var(--ink-soft);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.draw-heading svg {
+  width: 16px;
+  height: 16px;
+  color: var(--marker);
+}
+
+.draw-video.is-new {
+  animation: draw-pop 0.32s ease-out;
+}
+
+@keyframes draw-pop {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.draw-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.pill:disabled {
+  opacity: 0.45;
+  cursor: default;
+  filter: none;
+}
+
+.pill-quiet:disabled:hover {
+  border-color: var(--line);
+}
+
+.draw-hint {
+  margin-top: 10px;
+  font-size: 14px;
 }
 
 /* ---------- Přehrávač ---------- */
@@ -816,6 +912,14 @@ a {
 
   .next-play {
     flex: 1 0 100%;
+  }
+
+  .draw-actions .pill {
+    flex: 1 1 auto;
+  }
+
+  #draw-top {
+    flex-basis: 100%;
   }
 }
 

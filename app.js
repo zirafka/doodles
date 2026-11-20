@@ -30,6 +30,11 @@ const ICONS = {
   down1: svg('<path d="M8 12.4l-5.2-8h10.4z" fill="currentColor"/>'),
   down5: svg(`<path d="M5 2.6v10.2M2.2 10L5 12.8 7.8 10M11 2.6v10.2M8.2 10L11 12.8 13.8 10" ${stroke}/>`),
   end: svg(`<path d="M3 13.4h10M8 2.6v7.8M4.6 7L8 10.4 11.4 7" ${stroke}/>`),
+  dice: svg(
+    '<rect x="2" y="2" width="12" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/>' +
+      '<circle cx="5.4" cy="5.4" r="1.15" fill="currentColor"/><circle cx="8" cy="8" r="1.15" fill="currentColor"/>' +
+      '<circle cx="10.6" cy="10.6" r="1.15" fill="currentColor"/>',
+  ),
 };
 
 // Pořadí tlačítek odpovídá pořadí v DOM (a tedy pořadí pro Tab).
@@ -50,7 +55,19 @@ const els = {
   progressPct: $('progress-pct'),
   mosaic: $('mosaic'),
   notices: $('notices'),
+  nextCard: $('next-card'),
   nextBody: $('next-body'),
+  drawOpen: $('draw-open'),
+  draw: $('draw'),
+  drawHeading: $('draw-nadpis'),
+  drawVideo: $('draw-video'),
+  drawThumb: $('draw-thumb'),
+  drawTitle: $('draw-title'),
+  drawMeta: $('draw-meta'),
+  drawTop: $('draw-top'),
+  drawAgain: $('draw-again'),
+  drawPlay: $('draw-play'),
+  drawHint: $('draw-hint'),
   player: $('player'),
   playerMessage: $('player-message'),
   playerMessageText: $('player-message-text'),
@@ -94,6 +111,8 @@ const sync = {
   snapshotTimer: null,
 };
 const yt = { apiPromise: null, player: null, ready: false, loadedId: null };
+// Losování: id = právě vylosované video, seen = co už se v tomhle kole ukázalo.
+const draw = { id: null, seen: new Set(), fresh: false };
 const rowCache = new Map();
 const dotCache = new Map();
 const notices = new Map();
@@ -289,6 +308,7 @@ function render(opts = {}) {
   renderProgress(view);
   renderMosaic(view);
   renderNext(view);
+  renderDraw(view);
   renderLists(view);
   renderPlayerBar();
   renderAccount();
@@ -399,6 +419,54 @@ function renderNext(view) {
       }),
     ]),
   );
+}
+
+// Losuje se ze zbývajících videí kromě prvního, to už na řadě je.
+function drawPool(view) {
+  return isLoading() ? [] : view.remaining.slice(1);
+}
+
+function renderDraw(view) {
+  const pool = drawPool(view);
+  // Vylosované video mezitím odškrtnuté, přesunuté na začátek nebo vyřazené z playlistu.
+  if (draw.id && !pool.includes(draw.id)) draw.id = null;
+  const id = draw.id;
+  els.drawOpen.hidden = !pool.length || Boolean(id);
+  els.draw.hidden = !id;
+  if (!id) {
+    els.draw.dataset.id = '';
+    return;
+  }
+
+  const video = state.byId.get(id);
+  if (els.draw.dataset.id !== id) {
+    els.draw.dataset.id = id;
+    els.drawThumb.dataset.id = id;
+    els.drawThumb.replaceChildren(thumbImg(id, { lazy: false }));
+    els.drawTitle.textContent = video.title;
+    els.drawTitle.title = video.title;
+    els.drawPlay.dataset.id = id;
+    els.drawPlay.setAttribute('aria-label', `Pustit: ${video.title}`);
+    els.drawTop.setAttribute('aria-label', `Na začátek fronty: ${video.title}`);
+  }
+  if (draw.fresh) {
+    draw.fresh = false;
+    els.drawVideo.classList.remove('is-new');
+    void els.drawVideo.offsetWidth; // restart animace
+    els.drawVideo.classList.add('is-new');
+  }
+
+  const parts = [video.duration];
+  if (view.editable) parts.push(`${view.remaining.indexOf(id) + 1}. místo ve frontě`);
+  els.drawMeta.replaceChildren(
+    document.createTextNode(parts.filter(Boolean).join(' · ')),
+    ...(id === state.playingId ? [el('span', { className: 'tag', text: 'hraje' })] : []),
+  );
+  els.drawTop.hidden = !view.editable;
+  els.drawHint.hidden = state.phase !== 'guest';
+  const alone = pool.length < 2;
+  els.drawAgain.disabled = alone;
+  els.drawAgain.title = alone ? 'Jiný doodle ve frontě není' : '';
 }
 
 function getRow(id) {
@@ -676,6 +744,43 @@ function moveToIndex(id, index) {
   render();
   flash(getRow(id));
   announce(`${state.byId.get(id).title}: pozice ${result.to + 1} z ${result.count}.`);
+  scheduleSave();
+}
+
+// Stejné video se znovu nevylosuje, dokud se neukážou všechna ostatní.
+function drawRandom() {
+  const pool = drawPool(buildView());
+  if (!pool.length) return;
+  let candidates = pool.filter((id) => id !== draw.id && !draw.seen.has(id));
+  if (!candidates.length) {
+    draw.seen.clear();
+    candidates = pool.filter((id) => id !== draw.id);
+  }
+  if (!candidates.length) candidates = pool;
+  const id = candidates[Math.floor(Math.random() * candidates.length)];
+  draw.seen.add(id);
+  draw.id = id;
+  draw.fresh = true;
+  render({ focusKey: 'draw-again' });
+  const video = state.byId.get(id);
+  announce(`Vylosováno: ${video.title}${video.duration ? `, ${video.duration}` : ''}.`);
+}
+
+function closeDraw() {
+  if (!draw.id) return;
+  draw.id = null;
+  render({ focusKey: 'draw-open' });
+}
+
+function drawToTop() {
+  const id = draw.id;
+  if (!canEdit() || !id) return;
+  draw.id = null;
+  const result = moveRemaining(id, 0);
+  render({ focusKey: 'next-play' });
+  if (!result) return;
+  flash(els.nextCard);
+  announce(`Na řadě: ${state.byId.get(id).title}.`);
   scheduleSave();
 }
 
@@ -1177,6 +1282,15 @@ function bindEvents() {
       case 'dot':
         goToRow(id);
         break;
+      case 'draw':
+        drawRandom();
+        break;
+      case 'draw-top':
+        drawToTop();
+        break;
+      case 'draw-close':
+        closeDraw();
+        break;
       case 'player-done':
         if (state.playingId) toggleDone(state.playingId, 'player');
         break;
@@ -1203,6 +1317,9 @@ function bindEvents() {
     }
   });
   els.mosaic.addEventListener('keydown', onMosaicKeydown);
+  els.draw.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeDraw();
+  });
   bindDrag();
 
   const flushIfPending = () => {
@@ -1246,6 +1363,10 @@ async function copyUid(button) {
 /* ---------- Start ---------- */
 
 async function main() {
+  els.drawOpen.insertAdjacentHTML('afterbegin', ICONS.dice);
+  els.drawHeading.insertAdjacentHTML('afterbegin', ICONS.dice);
+  els.drawAgain.insertAdjacentHTML('afterbegin', ICONS.dice);
+  els.drawTop.insertAdjacentHTML('afterbegin', ICONS.top);
   bindEvents();
   try {
     await loadVideos();
