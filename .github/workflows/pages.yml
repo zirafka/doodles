@@ -1,0 +1,73 @@
+name: Aktualizace a nasazení
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "7 5 * * *" # denně kolem 5:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write # commit aktualizovaného data/videos.json
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    env:
+      # Jen informace, jestli je secret nastavený; samotný klíč dostane jen krok se skriptem.
+      HAS_YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY != '' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Načtení playlistu z YouTube
+        id: playlist
+        if: env.HAS_YOUTUBE_API_KEY == 'true'
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+        run: python3 scripts/update_playlist.py
+
+      - name: Bez YouTube API klíče
+        if: env.HAS_YOUTUBE_API_KEY != 'true'
+        run: echo "Secret YOUTUBE_API_KEY není nastavený, seznam videí se neaktualizuje."
+
+      - name: Commit změněného seznamu videí
+        if: steps.playlist.outcome == 'success'
+        run: |
+          if git diff --quiet -- data/videos.json; then
+            echo "Seznam videí se nezměnil."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/videos.json
+          git commit -m "Aktualizace seznamu videí z playlistu"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+
+      - name: Příprava souborů webu
+        run: |
+          mkdir -p _site
+          cp index.html style.css app.js firebase-config.js _site/
+          cp -r data _site/
+
+      - name: Nastavení Pages
+        uses: actions/configure-pages@v6
+
+      - name: Nahrání webu
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+
+      - name: Nasazení na GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

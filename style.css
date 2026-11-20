@@ -1,0 +1,914 @@
+/* Doodle deník – vzhled. Světlé a tmavé téma přes CSS proměnné. */
+
+:root {
+  color-scheme: light;
+  --paper: #f3f5f8;
+  --card: #ffffff;
+  --ink: #1d2740;
+  --ink-soft: #5b6680;
+  --line: #d9dfe9;
+  --marker: #d62f6b;
+  --marker-ink: #ffffff;
+  --done-bg: #eaf6ef;
+  --done-ink: #1f6b46;
+
+  --r1: #e5484d;
+  --r2: #f08c2e;
+  --r3: #f2c230;
+  --r4: #4cae6b;
+  --r5: #2f9bd6;
+  --r6: #5a63d8;
+  --r7: #a158d1;
+
+  --shadow: 0 1px 2px rgb(29 39 64 / 0.06);
+  --shadow-raised: 0 8px 24px rgb(29 39 64 / 0.16);
+  --radius: 16px;
+  --radius-row: 12px;
+  --font-display: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Figtree", ui-sans-serif, system-ui, sans-serif;
+  --sticky-offset: 16px;
+  --thumb: 72px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --paper: #131824;
+    --card: #1b2231;
+    --ink: #e9ecf4;
+    --ink-soft: #9aa5bd;
+    --line: #2e384c;
+    --marker: #ff5c93;
+    --marker-ink: #1a0b12;
+    --done-bg: #173024;
+    --done-ink: #7fd6a2;
+
+    --r1: #ff6b70;
+    --r2: #ffa14d;
+    --r3: #ffd35a;
+    --r4: #6fcf8d;
+    --r5: #55b8ef;
+    --r6: #8089f0;
+    --r7: #c183ec;
+
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.3);
+    --shadow-raised: 0 8px 24px rgb(0 0 0 / 0.45);
+  }
+}
+
+/* ---------- Základ ---------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html {
+  scroll-padding-top: var(--sticky-offset);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: var(--paper);
+  color: var(--ink);
+  font: 400 16px/1.45 var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2 {
+  font-family: var(--font-display);
+  margin: 0;
+}
+
+p {
+  margin: 0;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+a {
+  color: var(--marker);
+}
+
+:focus-visible {
+  outline: 3px solid var(--marker);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: 16px;
+  top: -100px;
+  z-index: 100;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: var(--marker);
+  color: var(--marker-ink);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.skip-link:focus {
+  top: 12px;
+}
+
+.muted {
+  color: var(--ink-soft);
+}
+
+.page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 28px 16px 48px;
+}
+
+/* ---------- Tlačítka ---------- */
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 8px 18px;
+  border: 1.5px solid var(--marker);
+  border-radius: 999px;
+  background: var(--marker);
+  color: var(--marker-ink);
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 1.1;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: filter 0.15s, background-color 0.15s, border-color 0.15s;
+}
+
+.pill:hover {
+  filter: brightness(1.07);
+}
+
+.pill:active {
+  filter: brightness(0.95);
+}
+
+.pill-quiet {
+  background: transparent;
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+.pill-quiet:hover {
+  filter: none;
+  border-color: var(--ink-soft);
+}
+
+.pill-small {
+  min-height: 34px;
+  padding: 6px 14px;
+  font-size: 14px;
+}
+
+.pill svg {
+  width: 16px;
+  height: 16px;
+}
+
+.pill.is-done {
+  background: var(--done-bg);
+  border-color: var(--done-ink);
+  color: var(--done-ink);
+}
+
+.icon-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--ink-soft);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.icon-btn svg {
+  width: 15px;
+  height: 15px;
+}
+
+.icon-btn:hover:not(:disabled) {
+  color: var(--marker);
+  border-color: var(--marker);
+}
+
+.icon-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* ---------- Hlavička ---------- */
+
+.masthead {
+  margin-bottom: 20px;
+}
+
+.masthead-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.masthead h1 {
+  font-weight: 800;
+  font-size: clamp(2.1rem, 8vw, 2.9rem);
+  line-height: 1.02;
+  letter-spacing: -0.025em;
+}
+
+.progress {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin: 10px 0 14px;
+}
+
+.progress-count {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.7rem;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.progress-pct {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  color: var(--ink-soft);
+  font-weight: 600;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.mosaic {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1px;
+  margin-inline: -4px;
+}
+
+.dot {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+}
+
+.dot::before {
+  content: "";
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--c) 60%, transparent);
+  background: transparent;
+  transition: transform 0.15s;
+}
+
+.dot.is-done::before {
+  border-color: var(--c);
+  background: var(--c);
+}
+
+.dot:hover::before {
+  transform: scale(1.2);
+}
+
+.dot:focus-visible {
+  outline-width: 2px;
+  outline-offset: 0;
+}
+
+/* ---------- Upozornění ---------- */
+
+.notices:empty {
+  display: none;
+}
+
+.notices {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--ink-soft);
+  border-radius: var(--radius-row);
+  background: var(--card);
+  box-shadow: var(--shadow);
+  font-size: 15px;
+}
+
+.notice-error {
+  border-left-color: var(--marker);
+}
+
+.notice-text {
+  flex: 1 1 260px;
+}
+
+.notice-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ---------- Karta Na řadě ---------- */
+
+.card {
+  padding: 14px 16px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+  box-shadow: var(--shadow);
+}
+
+.card-heading {
+  margin-bottom: 10px;
+  font-weight: 600;
+  font-size: 1.15rem;
+}
+
+.next-video {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.next-text {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.next-title {
+  font-weight: 600;
+  font-size: 1.02rem;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.next-empty {
+  font-weight: 600;
+  color: var(--done-ink);
+}
+
+/* ---------- Přehrávač ---------- */
+
+.player {
+  margin-top: 16px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+  box-shadow: var(--shadow);
+}
+
+.player-frame {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: #000;
+}
+
+.player-frame #yt-player {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.player-message {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 14px;
+  padding: 20px;
+  background: var(--card);
+  text-align: center;
+}
+
+.player-message p {
+  max-width: 36ch;
+}
+
+.player-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 10px 12px;
+}
+
+.player-title {
+  flex: 1 1 220px;
+  min-width: 0;
+  font-weight: 600;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.player-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.player-close {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 22px;
+}
+
+/* Na mobilu na výšku je přehrávač přilepený nahoře, aby šlo zároveň odškrtávat. */
+@media (max-width: 760px) and (orientation: portrait) {
+  .player {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    margin-inline: -16px;
+    border-radius: 0;
+    border-inline: 0;
+    box-shadow: var(--shadow-raised);
+  }
+
+  .player-bar {
+    padding: 8px 12px;
+  }
+
+  .player-title {
+    flex-basis: 100%;
+    font-size: 14px;
+    -webkit-line-clamp: 1;
+  }
+
+  .player-actions {
+    width: 100%;
+  }
+
+  .player-actions .player-close {
+    margin-left: auto;
+  }
+}
+
+/* ---------- Seznamy ---------- */
+
+.list-section {
+  margin-top: 32px;
+}
+
+.list-heading {
+  margin-bottom: 12px;
+  font-weight: 600;
+  font-size: 1.4rem;
+}
+
+.list-heading:focus {
+  outline: none;
+}
+
+.list-heading .count {
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.list-hint {
+  margin: -4px 0 12px;
+  color: var(--ink-soft);
+  font-size: 14px;
+}
+
+.empty {
+  padding: 16px;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-row);
+  color: var(--ink-soft);
+  text-align: center;
+}
+
+.rows {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 8px 10px 8px 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-row);
+  background: var(--card);
+  box-shadow: var(--shadow);
+  outline: 3px solid transparent;
+  outline-offset: 1px;
+  transition: outline-color 0.6s ease-out;
+}
+
+.row.flash {
+  outline-color: var(--marker);
+  transition: none;
+}
+
+.row.is-done {
+  background: var(--done-bg);
+  border-color: color-mix(in srgb, var(--done-ink) 28%, transparent);
+}
+
+.row.is-playing {
+  border-color: var(--marker);
+  box-shadow: inset 0 0 0 1px var(--marker), var(--shadow);
+}
+
+.row.dragging {
+  opacity: 0.45;
+}
+
+.row.drop-before::before,
+.row.drop-after::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--marker);
+  pointer-events: none;
+}
+
+.row.drop-before::before {
+  top: -6.5px;
+}
+
+.row.drop-after::after {
+  bottom: -6.5px;
+}
+
+.handle {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 40px;
+  margin-right: -4px;
+  color: var(--ink-soft);
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.handle svg {
+  width: 16px;
+  height: 16px;
+}
+
+.handle:active {
+  cursor: grabbing;
+}
+
+.check {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 2px solid var(--ink-soft);
+  border-radius: 9px;
+  background: var(--card);
+  color: transparent;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.check svg {
+  width: 17px;
+  height: 17px;
+}
+
+.check:hover {
+  border-color: var(--done-ink);
+}
+
+.check[aria-checked="true"] {
+  border-color: var(--done-ink);
+  background: var(--done-ink);
+  color: var(--done-bg);
+}
+
+.thumb {
+  flex: none;
+  width: var(--thumb);
+  height: var(--thumb);
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 10px;
+  background: var(--line);
+  cursor: pointer;
+}
+
+.thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.row.is-done .thumb img {
+  opacity: 0.55;
+}
+
+.row-text {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.row-title {
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.row-meta {
+  margin-top: 3px;
+  color: var(--ink-soft);
+  font-size: 13.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.row.is-done .row-meta {
+  color: var(--done-ink);
+}
+
+.tag {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--marker);
+  color: var(--marker-ink);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.6;
+  vertical-align: 1px;
+}
+
+.row-actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 12px;
+}
+
+.move {
+  display: grid;
+  grid-template-columns: repeat(3, 30px);
+  grid-template-areas:
+    "top up5 up1"
+    "end down5 down1";
+  gap: 4px;
+}
+
+.move-top { grid-area: top; }
+.move-up5 { grid-area: up5; }
+.move-up1 { grid-area: up1; }
+.move-down1 { grid-area: down1; }
+.move-down5 { grid-area: down5; }
+.move-end { grid-area: end; }
+
+/* Co se v jakém seznamu ukazuje */
+.row:not(.mode-remaining) .handle,
+.row:not(.mode-remaining) .move,
+.row.mode-guest .check {
+  display: none;
+}
+
+/* Na dotykových zařízeních se nepřetahuje, úchyt není potřeba. */
+@media (hover: none), (pointer: coarse) {
+  .handle {
+    display: none !important;
+  }
+}
+
+/* Úzký displej: tlačítka pořadí na druhém řádku, přes celou šířku. */
+@media (max-width: 600px) {
+  .row {
+    gap: 8px 10px;
+  }
+
+  .row-title {
+    -webkit-line-clamp: 4;
+  }
+
+  .row.mode-remaining .row-actions {
+    flex: 1 0 100%;
+    gap: 4px;
+  }
+
+  .row.mode-remaining .play-btn {
+    margin-right: 6px;
+  }
+
+  .row.mode-remaining .move {
+    flex: 1 1 auto;
+    display: flex;
+    gap: 4px;
+  }
+
+  .row.mode-remaining .move .icon-btn {
+    flex: 1 1 0;
+    width: auto;
+    height: 36px;
+  }
+
+  .row.mode-remaining .move .icon-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --thumb: 64px;
+  }
+
+  .next-video {
+    flex-wrap: wrap;
+  }
+
+  .next-play {
+    flex: 1 0 100%;
+  }
+}
+
+/* ---------- Patička a účet ---------- */
+
+.footer {
+  margin-top: 48px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+.account {
+  max-width: 520px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-row);
+  background: var(--card);
+  font-size: 14px;
+}
+
+.account-heading {
+  margin-bottom: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.account-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  margin-top: 8px;
+}
+
+.account-label {
+  min-width: 90px;
+  color: var(--ink-soft);
+}
+
+.account-value {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.uid-input {
+  flex: 1 1 200px;
+  min-width: 0;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+  font: 13px/1.3 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.account-note {
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+/* ---------- Drobnosti ---------- */
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  z-index: 50;
+  max-width: min(92vw, 480px);
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: var(--ink);
+  color: var(--paper);
+  box-shadow: var(--shadow-raised);
+  font-weight: 500;
+  font-size: 15px;
+  transform: translateX(-50%);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.noscript {
+  max-width: 720px;
+  margin: 16px auto;
+  padding: 0 16px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

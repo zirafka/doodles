@@ -1,0 +1,23 @@
+rules_version = '2';
+
+// Pravidla Firestore pro Doodle deník.
+// Do konzole Firebase je vlož ručně: Firestore Database -> záložka Rules -> Publish.
+// Místo VLOZ_SVOJE_UID dej svoje Firebase UID z panelu "Účet" v patičce stránky.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Jediný dokument se stavem: users/{uid}. Číst a zapisovat ho smí jen jeho
+    // přihlášená majitelka, a to jen s tímhle konkrétním UID.
+    match /users/{userId} {
+      allow read, write: if request.auth != null
+                         && request.auth.uid == userId
+                         && request.auth.uid == "VLOZ_SVOJE_UID";
+    }
+
+    // Všechno ostatní je zakázané.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
